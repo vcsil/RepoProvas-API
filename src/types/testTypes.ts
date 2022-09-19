@@ -9,3 +9,4 @@ export type TTestUserPost = {
 };
 
 export type TTestBasic = Omit<Test, 'id'>;
+

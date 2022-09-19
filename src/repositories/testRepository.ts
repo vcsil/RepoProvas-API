@@ -34,3 +34,38 @@ export async function insertTest(newTest: TTestBasic) {
     data: newTest,
   });
 }
+
+export async function findTestsByDisciplineId() {
+  const result =  await prisma.term.findMany({
+    select:{
+      number: true,
+      Discipline: {
+        select:{
+          name: true,
+          TeacherDiscipline:{
+            select:{
+              teacher:{
+                select:{
+                  name: true,
+                },
+              },
+              Test:{
+                select:{
+                  name: true,
+                  pdfUrl: true,
+                  category:{
+                    select:{
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },                
+      },
+
+    },
+  });
+  return result;
+}

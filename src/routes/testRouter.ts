@@ -3,7 +3,7 @@ import { Router } from 'express';
 import validateSchema from '../middlewares/schemaValidationMiddleware';
 import { checkAuthMiddleware } from '../middlewares/authMiddleware';
 import { testSchema } from '../schemas/testSchema';
-import { createTest } from '../controllers/testController';
+import { createTest, getTestsByDiscipline } from '../controllers/testController';
 
 const testRouter = Router();
 
@@ -12,6 +12,12 @@ testRouter.post(
   checkAuthMiddleware,
   validateSchema(testSchema, 'body'),
   createTest,
+);
+
+testRouter.get(
+  '/tests/disciplines',
+  checkAuthMiddleware,
+  getTestsByDiscipline,
 );
 
 export default testRouter;
