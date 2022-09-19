@@ -1,10 +1,7 @@
 import supertest from 'supertest';
-import bcrypt from 'bcrypt';
 
 import app from '../src/app';
-import { prisma } from '../src/database/database';
-import { TAuthBasic } from '../src/types/authTypes';
-import userFactory from './factories/userFactory';
+import userFactory, { userSignUp } from './factories/userFactory';
 
 describe('Testa SignUp', () => {
   it('Testa SignUp com body correto -> deve retornar 201 e o usuário criado.', async () => {
@@ -35,14 +32,15 @@ describe('Testa SignUp', () => {
   });
 
   it('Testa SignUp com email já em uso ->, deve retornar 400', async () => {
-    const user = userFactory();
-    const userDB: TAuthBasic = { email: user.email, password: bcrypt.hashSync(user.password, 10) };
-        
-    await prisma.user.create({
-      data: userDB,
-    });
+    const user = await userSignUp();
 
-    const result = await supertest(app).post('/signup').send(user);
+    const result = await supertest(app).post('/signup').send(
+      {
+        email: user.email,
+        password: user.password,
+        confirmPassword: user.password,
+      },
+    );
 
     expect(result.status).toBe(400);
   });
@@ -50,30 +48,18 @@ describe('Testa SignUp', () => {
 
 describe('Testa SignIn', () => {
   it('Testa SignIn com o body correto -> deve retornar 200 e o token dentro de um objeto', async () => {
-    const user = userFactory();
-    const { email, password } = user;
-    const userDB: TAuthBasic = { email, password: bcrypt.hashSync(password, 10) };
-
-    await prisma.user.create({
-      data: userDB,
-    });
-
-    const result = await supertest(app).post('/signin').send({ email, password });
+    const user = await userSignUp();
+    
+    const result = await supertest(app).post('/signin').send({ email: user.email, password: user.password });
 
     expect(result.status).toBe(200);
     expect(result.body).toBeInstanceOf(Object);
   });
 
   it('Testa SignIn com a senha incorreta -> deve retornar 401', async () => {
-    const user = userFactory();
-    const { email, password } = user;
-    const userDB: TAuthBasic = { email, password: bcrypt.hashSync(user.password, 10) };
-    
-    await prisma.user.create({
-      data: userDB,
-    });
+    const user = await userSignUp();
 
-    const invalidCredentials = { email, password: password + 'a' };
+    const invalidCredentials = { email: user.email, password: user.password + 'a' };
     const result = await supertest(app).post('/signin').send(invalidCredentials);
 
     expect(result.status).toBe(401);

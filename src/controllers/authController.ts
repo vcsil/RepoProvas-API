@@ -18,6 +18,6 @@ export async function signIn(req: Request, res: Response) {
   
   const jwtToken = await signInService.signin({ email, password });
   
-  return res.status(200).send(jwtToken);
+  return res.status(200).send({ token: jwtToken });
 }
 
