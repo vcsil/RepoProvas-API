@@ -9,7 +9,7 @@ import userFactory from './factories/userFactory';
 describe('Testa SignUp', () => {
   it('Testa SignUp com body correto -> deve retornar 201 e o usuário criado.', async () => {
     const user = userFactory();
-
+    
     const result = await supertest(app).post('/signup').send(user);
 
     expect(result.status).toBe(201);
@@ -36,8 +36,8 @@ describe('Testa SignUp', () => {
 
   it('Testa SignUp com email já em uso ->, deve retornar 400', async () => {
     const user = userFactory();
-    const userDB: TAuthBasic = { email: user.email, password: user.password };
-    
+    const userDB: TAuthBasic = { email: user.email, password: bcrypt.hashSync(user.password, 10) };
+        
     await prisma.user.create({
       data: userDB,
     });
@@ -60,8 +60,6 @@ describe('Testa SignIn', () => {
 
     const result = await supertest(app).post('/signin').send({ email, password });
 
-    console.log(result);
-
     expect(result.status).toBe(200);
     expect(result.body).toBeInstanceOf(Object);
   });
@@ -69,8 +67,8 @@ describe('Testa SignIn', () => {
   it('Testa SignIn com a senha incorreta -> deve retornar 401', async () => {
     const user = userFactory();
     const { email, password } = user;
-    const userDB: TAuthBasic = { email, password };
-
+    const userDB: TAuthBasic = { email, password: bcrypt.hashSync(user.password, 10) };
+    
     await prisma.user.create({
       data: userDB,
     });
